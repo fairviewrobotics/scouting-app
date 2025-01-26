@@ -1,0 +1,47 @@
+[
+  {
+    "question": "Scout Name",
+    "name": "scout_name",
+    "type": "String"
+  },
+  {
+    "question": "Match Number",
+    "name": "match_number",
+    "type": "Integer"
+  },
+  {
+    "question": "Team Number",
+    "name": "team_number",
+    "type": "Integer"
+  },
+  {
+    "question": "Auto Notes Scored",
+    "name": "auto_notes",
+    "type": "Integer",
+    "score_pref": "high"
+  },
+  {
+    "question": "Teleop Notes Scored",
+    "name": "teleop_notes",
+    "type": "Integer",
+    "score_pref": "high"
+  },
+  {
+    "question": "Notes Passed",
+    "name": "notes_passed",
+    "type": "Integer",
+    "score_pref": "high"
+  },
+  {
+    "question": "Climbed?",
+    "name": "climbed",
+    "type": "Boolean",
+    "score_pref": "true"
+  },
+  {
+    "question": "Breakdown?",
+    "name": "breakdown",
+    "type": "Boolean",
+    "score_pref": "false"
+  }
+]
