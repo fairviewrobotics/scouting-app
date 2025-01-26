@@ -6,8 +6,8 @@ import random
 import tba_statbotics
 import string
 
-match_scouting_json_path = "/Users/aadit/Documents/GitHub/scouting-app-backend/api/match_scouting.json"
-scouting_schema_path = "/Users/aadit/Documents/GitHub/scouting-app-backend/api/scouting_schema.json"
+match_scouting_json_path = "@api/match_scouting_data.json"
+scouting_schema_path = "@api/scouting_schema.json"
 
 def get_entry_id(name: str, match_number: int) -> str:
 

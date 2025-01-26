@@ -3,8 +3,8 @@ import database
 from database import Database
 import tba_statbotics
 
-schema_path = "/Users/aadit/Documents/GitHub/scouting-app-backend/api/schema.json"
-match_scouting_json_path = "/Users/aadit/Documents/GitHub/scouting-app-backend/api/match_scouting.json"
+schema_path = "@api/schema.json"
+match_scouting_json_path = "@api/match_scouting_data.json"
 
 
 

@@ -297,8 +297,8 @@ async def drop_and_create_table_from_json(json_file: str, table_name: str, prima
 
 # FUNCTIONS TO BE USED BY API ENDPOINTS
 
-schema_path = "/Users/aadit/Documents/GitHub/scouting-app-backend/api/schema.json"
-scouting_schema_path = "/Users/aadit/Documents/GitHub/scouting-app-backend/api/scouting_schema.json"
+schema_path = "@api/schema.json"
+scouting_schema_path = "@api/scouting_schema.json"
 
 
 class Database:
