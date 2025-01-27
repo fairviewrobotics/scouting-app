@@ -3,11 +3,13 @@ import database
 from database import Database
 import hashlib
 import random
-import tba_statbotics
+from . import tba_statbotics
 import string
+import os
 
-match_scouting_json_path = "@api/match_scouting_data.json"
-scouting_schema_path = "@api/scouting_schema.json"
+base_dir = os.path.dirname(os.path.abspath(__file__))
+match_scouting_json_path = os.path.join(base_dir, 'match_scouting_data.json')
+scouting_schema_path = os.path.join(base_dir, 'scouting_schema.json')
 
 def get_entry_id(name: str, match_number: int) -> str:
 

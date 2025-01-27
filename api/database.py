@@ -7,10 +7,11 @@ from urllib.parse import urlparse
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy import MetaData, Table, Column, Integer, String, DateTime, Float, Boolean, text
 from sqlalchemy.types import TypeEngine
-import tba_statbotics
+from . import tba_statbotics
 
-load_dotenv()
-
+dotenv_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../api', '.env'))
+print("Loading .env file from:", dotenv_path)
+load_dotenv(dotenv_path=dotenv_path)
 
 
 # DATABASE SETUP
@@ -109,6 +110,7 @@ async def query_data(table_name: str) -> list[dict]:
     Returns:
         list[dict]: The queried data.
     """
+    print("DATABASE_URL:", os.getenv("DATABASE_URL"))
     try:
         async with engine.connect() as conn:
             query = text(f'SELECT * FROM "{table_name}"')
@@ -297,8 +299,9 @@ async def drop_and_create_table_from_json(json_file: str, table_name: str, prima
 
 # FUNCTIONS TO BE USED BY API ENDPOINTS
 
-schema_path = "@api/schema.json"
-scouting_schema_path = "@api/scouting_schema.json"
+base_dir = os.path.dirname(os.path.abspath(__file__))
+schema_path = os.path.join(base_dir, 'schema.json')
+scouting_schema_path = os.path.join(base_dir, 'scouting_schema.json')
 
 
 class Database:
@@ -532,7 +535,7 @@ class Database:
         return asyncio.run(query_single_row(table_name, primary_key, primary_key_value))
     
     @staticmethod
-    def get_all_data(table_name: str):
+    async def get_all_data(table_name: str):
         """
         Queries data from a table.
 
@@ -542,7 +545,7 @@ class Database:
         Returns:
             list[dict]: The queried data.
         """
-        return asyncio.run(query_data(table_name))
+        return await query_data(table_name)
             
 
     

@@ -1,10 +1,12 @@
 import json
-import database
-from database import Database
-import tba_statbotics
+from . import database
+from .database import Database
+from . import tba_statbotics
+import os
 
-schema_path = "@api/schema.json"
-match_scouting_json_path = "@api/match_scouting_data.json"
+base_dir = os.path.dirname(os.path.abspath(__file__))
+match_scouting_json_path = os.path.join(base_dir, 'match_scouting_data.json')
+schema_path = os.path.join(base_dir, 'schema.json')
 
 
 
