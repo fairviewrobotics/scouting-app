@@ -3,9 +3,13 @@ import statbotics
 import requests
 from dotenv import load_dotenv
 
-load_dotenv()
 
+dotenv_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../api', '.env'))
+print("Loading .env file from:", dotenv_path)
+load_dotenv(dotenv_path=dotenv_path)
 apiKey = os.getenv("TBA_API_KEY")
+if apiKey == None: 
+    apiKey = os.environ.get('TBA_API_KEY')
 
 sb = statbotics.Statbotics()
 
@@ -20,6 +24,8 @@ def get_list_of_team_numbers(event_key: str) -> list[int]:
 
     try:
         response = requests.get(url, headers=headers)
+
+        print(response.json())
 
         if response.status_code == 200:
             posts = response.json()

@@ -17,6 +17,8 @@ load_dotenv(dotenv_path=dotenv_path)
 # DATABASE SETUP
 
 tmpPostgres = urlparse(os.getenv("DATABASE_URL"))
+if tmpPostgres == None: 
+    tmpPostgres = urlparse(os.environ.get('DATABASE_URL'))
 engine = create_async_engine(f"postgresql+asyncpg://{tmpPostgres.username}:{tmpPostgres.password}@{tmpPostgres.hostname}{tmpPostgres.path}?ssl=require", echo=True)
 
 metadata = MetaData()
@@ -395,7 +397,7 @@ class Database:
 
 
     @staticmethod
-    def update_sb_data(competition_key: str):
+    async def update_sb_data(competition_key: str):
         """
         Updates the Statbotics data in the database.
 
@@ -403,10 +405,10 @@ class Database:
             competition_key (str): The competition key to update data for. Format: "yyyyCOMP_CODE"
         """
         newData = tba_statbotics.get_new_sb_data(competition_key)
-        asyncio.run(update_data(competition_key, newData))
+        await update_data(competition_key, newData)
 
     @staticmethod
-    def update_tba_data(competition_key: str):
+    async def update_tba_data(competition_key: str):
         """
         Updates the TBA data in the database.
 
@@ -415,7 +417,7 @@ class Database:
         """
 
         newData = tba_statbotics.get_new_tba_data(competition_key)
-        asyncio.run(update_data(competition_key, newData))
+        await update_data(competition_key, newData)
 
     @staticmethod
     def insert_sb_data(competition_key: str):
