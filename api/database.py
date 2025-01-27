@@ -393,7 +393,7 @@ class Database:
             k.append({
                 "team_number": team_numbers[i],
             })
-        await insert_data(competition_key, k)
+        return await insert_data(competition_key, k)
 
 
     @staticmethod
@@ -405,10 +405,10 @@ class Database:
             competition_key (str): The competition key to update data for. Format: "yyyyCOMP_CODE"
         """
         newData = tba_statbotics.get_new_sb_data(competition_key)
-        await update_data(competition_key, newData)
+        return await update_data(competition_key, newData)
 
     @staticmethod
-    async def update_tba_data(competition_key: str):
+    async def update_tba_data(competition_key: str) -> bool: 
         """
         Updates the TBA data in the database.
 
@@ -417,7 +417,7 @@ class Database:
         """
 
         newData = tba_statbotics.get_new_tba_data(competition_key)
-        await update_data(competition_key, newData)
+        return await update_data(competition_key, newData)
 
     @staticmethod
     async def insert_sb_data(competition_key: str):
@@ -428,7 +428,7 @@ class Database:
             competition_key (str): The competition key to update data for. Format: "yyyyCOMP_CODE"
         """
         newData = tba_statbotics.get_new_sb_data(competition_key)
-        await insert_data(competition_key, newData)
+        return await insert_data(competition_key, newData)
 
     @staticmethod
     async def insert_tba_data(competition_key: str):
@@ -440,7 +440,7 @@ class Database:
         """
 
         newData = tba_statbotics.get_new_tba_data(competition_key)
-        await insert_data(competition_key, newData)
+        return await insert_data(competition_key, newData)
 
     @staticmethod
     async def add_match_scouting_data(data: dict, competition_key: str):

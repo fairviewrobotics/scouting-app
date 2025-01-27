@@ -18,11 +18,17 @@ async def get_match_scouting_json():
 
 @app.put("/api/py/update_data/statbotics/{competition_key}")
 async def update_statbotics_data(competition_key: str):
-    await Database.update_sb_data(competition_key)
+    result = await Database.update_sb_data(competition_key)
+    return {
+        "status": result
+    }
 
 @app.put("/api/py/update_data/blue_alliance/{competition_key}")
 async def update_blue_alliance_data(competition_key: str):
-    await Database.update_tba_data(competition_key)
+    result = await Database.update_tba_data(competition_key)
+    return {
+        "status": result
+    }
 
 # @app.post("/api/py/add_pit_scouting_data/{competition_key}")
 # async def add_pit_scouting_data(data: dict, competition_key: str):
@@ -42,7 +48,10 @@ async def get_weighted_all_teams(competition_key: str, weights: str):
 
 @app.put("/api/py/update_data/set_up_competition/{competition_key}")
 async def set_up_competition(competition_key: str):
-    await Database.set_up_competition(competition_key)
+    result = await Database.set_up_competition(competition_key)
+    return {
+        "status": result
+    }
 
 
 
