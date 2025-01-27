@@ -311,7 +311,7 @@ class Database:
     
     
     @staticmethod
-    def set_up_main_database(table_name: str):
+    async def set_up_main_database(table_name: str):
         """
         Sets up the main database by creating tables from JSON files.
         """
@@ -321,10 +321,10 @@ class Database:
             print(f"File not found: {schema_path}")
             return
 
-        asyncio.run(drop_and_create_table_from_json(schema_path, table_name))
+        await drop_and_create_table_from_json(schema_path, table_name)
 
     @staticmethod
-    def set_up_other_database(table_name: str, json_path: str, primary_db_key):
+    async def set_up_other_database(table_name: str, json_path: str, primary_db_key):
         """
         Sets up the database by creating tables from JSON files.
         """
@@ -336,7 +336,7 @@ class Database:
             print(f"File not found: {json_path}")
             return
 
-        asyncio.run(drop_and_create_table_from_json(json_path, table_name, primary_db_key))
+        await drop_and_create_table_from_json(json_path, table_name, primary_db_key)
 
     @staticmethod
     def clear_schema():
@@ -379,7 +379,7 @@ class Database:
 
 
     @staticmethod
-    def set_up_competition(competition_key: str):
+    async def set_up_competition(competition_key: str):
         """
         Sets up the competition by tables for all teams using TBA data.
 
@@ -393,7 +393,7 @@ class Database:
             k.append({
                 "team_number": team_numbers[i],
             })
-        asyncio.run(insert_data(competition_key, k))
+        await insert_data(competition_key, k)
 
 
     @staticmethod
@@ -420,7 +420,7 @@ class Database:
         await update_data(competition_key, newData)
 
     @staticmethod
-    def insert_sb_data(competition_key: str):
+    async def insert_sb_data(competition_key: str):
         """
         Updates the Statbotics data in the database.
 
@@ -428,10 +428,10 @@ class Database:
             competition_key (str): The competition key to update data for. Format: "yyyyCOMP_CODE"
         """
         newData = tba_statbotics.get_new_sb_data(competition_key)
-        asyncio.run(insert_data(competition_key, newData))
+        await insert_data(competition_key, newData)
 
     @staticmethod
-    def insert_tba_data(competition_key: str):
+    async def insert_tba_data(competition_key: str):
         """
         Updates the TBA data in the database.
 
@@ -440,10 +440,10 @@ class Database:
         """
 
         newData = tba_statbotics.get_new_tba_data(competition_key)
-        asyncio.run(insert_data(competition_key, newData))
+        await insert_data(competition_key, newData)
 
     @staticmethod
-    def add_match_scouting_data(data: dict, competition_key: str):
+    async def add_match_scouting_data(data: dict, competition_key: str):
         """
         Adds match scouting data to the database.
 
@@ -451,10 +451,10 @@ class Database:
             data (dict): The data to add.
             competition_key (str): The competition key to add data for. Format: "yyyyCOMP_CODE"
         """
-        asyncio.run(insert_data(competition_key + "_match_scouting", [data]))
+        await insert_data(competition_key + "_match_scouting", [data])
 
     @staticmethod
-    def remove_match_scouting_data(condition: dict, competition_key: str):
+    async def remove_match_scouting_data(condition: dict, competition_key: str):
         """
         Removes match scouting data from the database.
 
@@ -462,17 +462,17 @@ class Database:
             data (dict): The data to remove.
             competition_key (str): The competition key to remove data for. Format: "yyyyCOMP_CODE"
         """
-        asyncio.run(delete_data(competition_key + "_match_scouting", condition))
+        await delete_data(competition_key + "_match_scouting", condition)
 
     @staticmethod
-    def update_main_db_from_match_scouting_db(competition_key: str):
+    async def update_main_db_from_match_scouting_db(competition_key: str):
         """
         Updates the main database from the match scouting database.
 
         Args:
             competition_key (str): The competition key to update data for. Format: "yyyyCOMP_CODE"
         """
-        match_scouting_data = asyncio.run(query_data(competition_key + "_match_scouting"))
+        match_scouting_data = await query_data(competition_key + "_match_scouting")
         team_numbers = tba_statbotics.get_list_of_team_numbers(competition_key)
 
         with open(scouting_schema_path, 'r') as file:
@@ -505,10 +505,10 @@ class Database:
                 **{key: (team_dict_sum[key] / team_dict_count[key]) if team_dict_count[key] != 0 else 0 for key in team_dict_sum}
             })
 
-        asyncio.run(update_data(competition_key, to_add))
+        await update_data(competition_key, to_add)
 
     @staticmethod
-    def get_single_column(table_name: str, column_name: str):
+    async def get_single_column(table_name: str, column_name: str):
         """
         Gets all values of a single column from a table.
 
@@ -519,10 +519,10 @@ class Database:
         Returns:
             list: The values of the specified column.
         """
-        return asyncio.run(query_single_column(table_name, column_name))
+        return await query_single_column(table_name, column_name)
     
     @staticmethod
-    def get_single_row(table_name: str, primary_key: str, primary_key_value):
+    async def get_single_row(table_name: str, primary_key: str, primary_key_value):
         """
         Queries a single row of data from a table using the primary key.
 
@@ -534,7 +534,7 @@ class Database:
         Returns:
             dict: The queried row as a dictionary.
         """
-        return asyncio.run(query_single_row(table_name, primary_key, primary_key_value))
+        return await query_single_row(table_name, primary_key, primary_key_value)
     
     @staticmethod
     async def get_all_data(table_name: str):

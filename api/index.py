@@ -34,15 +34,15 @@ async def get_all_teams(competition_key: str):
 
 @app.get("/api/py/data/single_team/{team_number}/{competition_key}")
 async def get_single_team(team_number: int, competition_key: str):
-    return Database.get_single_row(competition_key, "team_number", team_number)
+    return await Database.get_single_row(competition_key, "team_number", team_number)
 
 @app.get("/api/py/data/weighted_all_teams/{competition_key}/{weights}")
 async def get_weighted_all_teams(competition_key: str, weights: str):
-    return Score.get_sorted_teams_and_data(competition_key, json.loads(weights))
+    return await Score.get_sorted_teams_and_data(competition_key, json.loads(weights))
 
 @app.put("/api/py/update_data/set_up_competition/{competition_key}")
 async def set_up_competition(competition_key: str):
-    Database.set_up_competition(competition_key)
+    await Database.set_up_competition(competition_key)
 
 
 

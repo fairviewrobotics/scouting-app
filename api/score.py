@@ -142,7 +142,7 @@ def get_sorted_teams(data: list[dict], weights: dict):
 
 
 class Score:
-    def get_sorted_teams_and_data(comp_key: str, weights: dict):
+    async def get_sorted_teams_and_data(comp_key: str, weights: dict):
         """
         Get a list of teams sorted by score
 
@@ -153,7 +153,7 @@ class Score:
         Returns:
             list[dict]: The data of all teams sorted by score
         """
-        data = Database.get_all_data(comp_key)
+        data = await Database.get_all_data(comp_key)
         return get_sorted_teams(data, weights)
 
 
