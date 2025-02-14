@@ -1,12 +1,10 @@
 import json
 from . import database
-from .database import Database
-from . import tba_statbotics
 import os
+from . import utils
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 match_scouting_json_path = os.path.join(base_dir, 'match_scouting_data.json')
-schema_path = os.path.join(base_dir, 'schema.json')
 
 
 
@@ -14,8 +12,14 @@ def z_score(list: list) -> list:
     """
     Calculate the z-score of a list of data points
     """
+    if len(list) == 0:
+        return []
     mean = sum(list) / len(list)
     std_dev = (sum([(value - mean) ** 2 for value in list]) / len(list)) ** 0.5
+
+    if std_dev == 0:
+        return [0 for _ in list]
+
     return [(value - mean) / std_dev for value in list]
 
 def get_column_from_dict(data: list[dict], column_name: str) -> list:
@@ -54,7 +58,7 @@ def combine_lists_to_dicts(list1: list, list2: list, column_name1: str, column_n
         return []
 
     
-def score(data: list[dict], weights: dict) -> list[dict]:
+def score(data: list[dict], weights: dict, competition_key: str) -> list[dict]:
     """
     Calculate the score of a team based on the data and weights
 
@@ -65,8 +69,7 @@ def score(data: list[dict], weights: dict) -> list[dict]:
     Returns:
         float: The score of the team
     """
-    with open(schema_path, 'r') as file:
-        schema = json.load(file)
+    schema = utils.get_combined_schema(competition_key)
 
     with open(match_scouting_json_path, 'r') as file:
         match_scouting_questions = json.load(file)
@@ -75,11 +78,6 @@ def score(data: list[dict], weights: dict) -> list[dict]:
     schema.pop("team_name")
 
     z_scores = []
-
-    temp = {
-        "winrate": 0.75,
-        "rank": 1
-    }
 
     prefs = dict()
     for key in schema.keys():
@@ -91,6 +89,9 @@ def score(data: list[dict], weights: dict) -> list[dict]:
 
     for key in schema.keys():
         column = get_column_from_dict(data, key)
+        for i in range(len(column)):
+            if column[i] == None:
+                column[i] = 0
         pref_column = [value * prefs.get(key, 1) for value in column]
         z = z_score(pref_column)
         z_scores.append(z)
@@ -115,7 +116,7 @@ def score(data: list[dict], weights: dict) -> list[dict]:
 
     return scores_dict
 
-def get_sorted_teams(data: list[dict], weights: dict):
+def get_sorted_teams(data: list[dict], weights: dict, competition_key: str) -> list[dict]:
     """
     Get a list of teams sorted by score
 
@@ -127,7 +128,7 @@ def get_sorted_teams(data: list[dict], weights: dict):
         list[dict]: The data of all teams sorted by score
     """
     # Calculate scores and combine with data
-    scores_dict = score(data, weights)
+    scores_dict = score(data, weights, competition_key)
 
     # Sort teams based on score
     sorted_teams = sorted(scores_dict, key=lambda x: x["score"], reverse=True)
@@ -141,51 +142,18 @@ def get_sorted_teams(data: list[dict], weights: dict):
     return combined_data
 
 
-class Score:
-    async def get_sorted_teams_and_data(comp_key: str, weights: dict):
-        """
-        Get a list of teams sorted by score
+async def get_sorted_teams_and_data(competition_key: str, weights: dict):
+    """
+    Get a list of teams sorted by score
 
-        Args:
-            comp_key (str): The competition key to get data from
-            weights (dict): The weights to score by
+    Args:
+        comp_key (str): The competition key to get data from
+        weights (dict): The weights to score by
 
-        Returns:
-            list[dict]: The data of all teams sorted by score
-        """
-        data = await Database.get_all_data(comp_key)
-        return get_sorted_teams(data, weights)
+    Returns:
+        list[dict]: The data of all teams sorted by score
+    """
+    data = await database.query_data(competition_key)
+    return get_sorted_teams(data, weights, competition_key)
 
-
-    
-
-if __name__ == '__main__':
-    # k = Database.get_single_column("2024code", "winrate")
-    # print("---------------------------------------------------")
-    # print(k)
-    k = Database.get_all_data("2024code")
-
-    # print(get_column_from_dict(k, "winrate"))
-
-    # data = [
-    #     {"team_number": 1234, "winrate": 0.75, "rank": 1},
-    #     {"team_number": 5678, "winrate": 0.65, "rank": 2},
-    #     {"team_number": 9101, "winrate": 0.85, "rank": 3}
-    # ]
-    weights = {
-                "rank": 1,
-                "winrate": 1,
-                "overall_epa": 1,
-                "auto_epa": 1,
-                "teleop_epa": 1,
-                "endgame_epa": 1,
-                "auto_notes": 0,
-                "teleop_notes": 0,
-                "notes_passed": 0,
-                "climbed": 0,
-                "breakdown": 0
-            }
-    team_score = score(k, weights)
-    print(team_score)
-    print(sorted(team_score, key=lambda x: x["score"]))
 

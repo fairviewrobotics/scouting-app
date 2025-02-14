@@ -7,11 +7,17 @@ from urllib.parse import urlparse
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy import MetaData, Table, Column, Integer, String, DateTime, Float, Boolean, text
 from sqlalchemy.types import TypeEngine
-from . import tba_statbotics
+
+from . import utils
+# import utils
+
 
 dotenv_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../api', '.env'))
 print("Loading .env file from:", dotenv_path)
 load_dotenv(dotenv_path=dotenv_path)
+
+base_dir = os.path.dirname(os.path.abspath(__file__))
+match_scouting_json_path = os.path.join(base_dir, 'match_scouting_data.json')
 
 
 # DATABASE SETUP
@@ -33,23 +39,20 @@ SQLALCHEMY_TYPE_MAP = {
 }
 
 
-# DATABASE FUNCTIONS
 
-async def create_table_from_json(json_file: str, table_name: str, primary_db_key) -> bool:
+async def create_main_table(competition_key) -> bool:
     """
-    Creates a MongoDB table from a JSON file.
+    Creates the main Postgres table for all data storage.
 
     Args:
-        json_file (str): JSON file to create table from.
-        table_name (str): Name of the table to create.
+        competition_key (str): The competition key to create the table for.
 
     Returns:
         bool: Database operation completion.
     """
     try:
         # Load schema from JSON
-        with open(json_file, "r") as f:
-            schema = json.load(f)
+        schema = utils.get_combined_schema(competition_key)
         
         # Create the 'teams' table
         table_columns = []
@@ -59,22 +62,66 @@ async def create_table_from_json(json_file: str, table_name: str, primary_db_key
                 raise ValueError(f"Unsupported column type: {column_type}")
             # Add columns, make "Team Number" a primary key if it fits
             table_columns.append(
-                Column(column_name.replace(" ", "_").lower(), sql_type, primary_key=(column_name == primary_db_key))
+                Column(column_name.replace(" ", "_").lower(), sql_type, primary_key=(column_name == "team_number"))
             )
 
-        Table(table_name, metadata, *table_columns)
+        Table(competition_key, metadata, *table_columns)
         print(f"Prepared to create table 'teams' with columns: {', '.join([col.name for col in table_columns])}")
 
         # Create the table in the database
         async with engine.begin() as conn:
             await conn.run_sync(metadata.create_all)
-        print(f"Table {table_name} created.")
+        print(f"Table {competition_key} created.")
         return True
     except Exception as e:
         print(f"Failed to create table: {e}")
         return False
     finally:
         await engine.dispose()
+
+
+async def set_up_scouting_db(competition_key: str):
+    with open(match_scouting_json_path, 'r') as file:
+        questions = json.load(file)
+    
+    set_up_dict = {"entry_id": "String"}
+    for question in questions:
+        set_up_dict[question["name"]] = question["type"]
+
+    try:
+        # Load schema from JSON
+        schema = set_up_dict
+        
+        # Create the 'teams' table
+        table_columns = []
+        for column_name, column_type in schema.items():
+            sql_type: TypeEngine = SQLALCHEMY_TYPE_MAP.get(column_type)
+            if not sql_type:
+                raise ValueError(f"Unsupported column type: {column_type}")
+            # Add columns, make "Team Number" a primary key if it fits
+            table_columns.append(
+                Column(column_name.replace(" ", "_").lower(), sql_type, primary_key=(column_name == "entry_id"))
+            )
+
+        Table(competition_key + "_match_scouting", metadata, *table_columns)
+        print(f"Prepared to create table 'teams' with columns: {', '.join([col.name for col in table_columns])}")
+
+        # Create the table in the database
+        async with engine.begin() as conn:
+            await conn.run_sync(metadata.create_all)
+        print(f"Table {competition_key} created.")
+        return True
+    except Exception as e:
+        print(f"Failed to create table: {e}")
+        return False
+    finally:
+        await engine.dispose()
+
+
+
+
+# DATABASE FUNCTIONS
+
 
 ### Insert Operation
 async def insert_data(table_name: str, data: list[dict]) -> bool:
@@ -277,288 +324,23 @@ async def delete_table(table_name: str) -> bool:
     finally:
         await engine.dispose()
 
-### Drop and Create Table Operation
-async def drop_and_create_table_from_json(json_file: str, table_name: str, primary_db_key="team_number") -> bool:
-    """Drops and recreates a table from a JSON file.
-
-    Args:
-        json_file (str): JSON file to create table from.
-        table_name (str): Name of the table to create.
-
-    Returns:
-        bool: Database operation completion.
-    """
-    try:
-        # Drop the table
-        await delete_table(table_name)
-
-        # Create the table
-        await create_table_from_json(json_file, table_name, primary_db_key)
-        return True
-    except Exception as e:
-        print(f"Failed to drop and create table: {e}")
-        return False
-
 # FUNCTIONS TO BE USED BY API ENDPOINTS
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 schema_path = os.path.join(base_dir, 'schema.json')
 scouting_schema_path = os.path.join(base_dir, 'scouting_schema.json')
-
-
-class Database:
-
-    
-    
-    @staticmethod
-    async def set_up_main_database(table_name: str):
-        """
-        Sets up the main database by creating tables from JSON files.
-        """
-
-        # Check if the schema.json file exists
-        if not os.path.exists(schema_path):
-            print(f"File not found: {schema_path}")
-            return
-
-        await drop_and_create_table_from_json(schema_path, table_name)
-
-    @staticmethod
-    async def set_up_other_database(table_name: str, json_path: str, primary_db_key):
-        """
-        Sets up the database by creating tables from JSON files.
-        """
-       
-        
-
-        # Check if the schema.json file exists
-        if not os.path.exists(json_path):
-            print(f"File not found: {json_path}")
-            return
-
-        await drop_and_create_table_from_json(json_path, table_name, primary_db_key)
-
-    @staticmethod
-    def clear_schema():
-        
-        initdict = {
-            "team_number": "Integer",
-            "team_name": "String",
-            "rank": "Integer",
-            "winrate": "Float",
-            "overall_epa": "Float",
-            "auto_epa": "Float",
-            "teleop_epa": "Float",
-            "endgame_epa": "Float"
-        }
-
-        with open(schema_path, 'w') as file:
-            json.dump(initdict, file, indent=4)
-
-    @staticmethod
-    def update_schema(dict : dict, clear_schema=False):
-        """Updates the schema of the database with a dictionary of items to be added.
-
-        Args:
-            dict (dict): List of items to be added to the schema.
-            clear_schema (bool, optional): Whether to clear the schema before updating. Defaults to False.
-        """
-
-        if clear_schema:
-            Database.clear_schema()
-
-        # Load the existing JSON data
-        with open(schema_path, 'r') as file:
-            schema = json.load(file)
-
-        schema.update(dict)
-
-        # Save the updated data back to the JSON file
-        with open(schema_path, 'w') as file:
-            json.dump(schema, file, indent=4)
-
-
-    @staticmethod
-    async def set_up_competition(competition_key: str):
-        """
-        Sets up the competition by tables for all teams using TBA data.
-
-        Args:
-            competition_key (str): The competition key to set up.
-        """
-
-        team_numbers = tba_statbotics.get_list_of_team_numbers(competition_key)
-        k = []
-        for i in range(len(team_numbers)):
-            k.append({
-                "team_number": team_numbers[i],
-            })
-        return await insert_data(competition_key, k)
-
-
-    @staticmethod
-    async def update_sb_data(competition_key: str):
-        """
-        Updates the Statbotics data in the database.
-
-        Args:
-            competition_key (str): The competition key to update data for. Format: "yyyyCOMP_CODE"
-        """
-        newData = tba_statbotics.get_new_sb_data(competition_key)
-        return await update_data(competition_key, newData)
-
-    @staticmethod
-    async def update_tba_data(competition_key: str) -> bool: 
-        """
-        Updates the TBA data in the database.
-
-        Args:
-            competition_key (str): The competition key to update data for. Format: "yyyyCOMP_CODE"
-        """
-
-        newData = tba_statbotics.get_new_tba_data(competition_key)
-        return await update_data(competition_key, newData)
-
-    @staticmethod
-    async def insert_sb_data(competition_key: str):
-        """
-        Updates the Statbotics data in the database.
-
-        Args:
-            competition_key (str): The competition key to update data for. Format: "yyyyCOMP_CODE"
-        """
-        newData = tba_statbotics.get_new_sb_data(competition_key)
-        return await insert_data(competition_key, newData)
-
-    @staticmethod
-    async def insert_tba_data(competition_key: str):
-        """
-        Updates the TBA data in the database.
-
-        Args:
-            competition_key (str): The competition key to update data for. Format: "yyyyCOMP_CODE"
-        """
-
-        newData = tba_statbotics.get_new_tba_data(competition_key)
-        return await insert_data(competition_key, newData)
-
-    @staticmethod
-    async def add_match_scouting_data(data: dict, competition_key: str):
-        """
-        Adds match scouting data to the database.
-
-        Args:
-            data (dict): The data to add.
-            competition_key (str): The competition key to add data for. Format: "yyyyCOMP_CODE"
-        """
-        await insert_data(competition_key + "_match_scouting", [data])
-
-    @staticmethod
-    async def remove_match_scouting_data(condition: dict, competition_key: str):
-        """
-        Removes match scouting data from the database.
-
-        Args:
-            data (dict): The data to remove.
-            competition_key (str): The competition key to remove data for. Format: "yyyyCOMP_CODE"
-        """
-        await delete_data(competition_key + "_match_scouting", condition)
-
-    @staticmethod
-    async def update_main_db_from_match_scouting_db(competition_key: str):
-        """
-        Updates the main database from the match scouting database.
-
-        Args:
-            competition_key (str): The competition key to update data for. Format: "yyyyCOMP_CODE"
-        """
-        match_scouting_data = await query_data(competition_key + "_match_scouting")
-        team_numbers = tba_statbotics.get_list_of_team_numbers(competition_key)
-
-        with open(scouting_schema_path, 'r') as file:
-            scouting_schema = json.load(file)
-        
-        scouting_schema.pop("entry_id")
-        scouting_schema.pop("scout_name")
-        scouting_schema.pop("match_number")
-        scouting_schema.pop("team_number")
-
-        for key in scouting_schema:
-            scouting_schema[key] = 0.0
-
-        to_add = []
-        
-        for team in team_numbers:
-            team_dict_sum = scouting_schema.copy()
-            team_dict_count = {key: 0 for key in scouting_schema}
-            for entry in match_scouting_data:
-                if entry["team_number"] == team:
-                    for key in team_dict_sum:
-                        if isinstance(entry[key], bool):
-                            team_dict_sum[key] += int(entry[key])
-                        else:
-                            team_dict_sum[key] += entry[key]
-                        team_dict_count[key] += 1
-
-            to_add.append({
-                "team_number": team,
-                **{key: (team_dict_sum[key] / team_dict_count[key]) if team_dict_count[key] != 0 else 0 for key in team_dict_sum}
-            })
-
-        await update_data(competition_key, to_add)
-
-    @staticmethod
-    async def get_single_column(table_name: str, column_name: str):
-        """
-        Gets all values of a single column from a table.
-
-        Args:
-            table_name (str): The name of the table to query data from.
-            column_name (str): The name of the column to get values from.
-
-        Returns:
-            list: The values of the specified column.
-        """
-        return await query_single_column(table_name, column_name)
-    
-    @staticmethod
-    async def get_single_row(table_name: str, primary_key: str, primary_key_value):
-        """
-        Queries a single row of data from a table using the primary key.
-
-        Args:
-            table_name (str): The name of the table to query data from.
-            primary_key (str): The name of the primary key column.
-            primary_key_value: The value of the primary key to query.
-
-        Returns:
-            dict: The queried row as a dictionary.
-        """
-        return await query_single_row(table_name, primary_key, primary_key_value)
-    
-    @staticmethod
-    async def get_all_data(table_name: str):
-        """
-        Queries data from a table.
-
-        Args:
-            table_name (str): The name of the table to query data from.
-
-        Returns:
-            list[dict]: The queried data.
-        """
-        return await query_data(table_name)
-            
+                
 
     
 
 if __name__ == "__main__":
-    Database.update_main_db_from_match_scouting_db("2024code")
+    # Database.update_main_db_from_match_scouting_db("2024code")
 
     # Database.set_up_main_database("2024code")
     # Database.set_up_competition("2024code")
     # Database.update_sb_data("2024code")
     # Database.update_tba_data("2024code")
+    asyncio.run(create_main_table("2025code"))
     
                 
 

@@ -1,15 +1,16 @@
 import json
-import database
-from database import Database
 import hashlib
 import random
-from . import tba_statbotics
 import string
 import os
+import sys
+from . import database
+from . import tba_statbotics
+# import database
+# import tba_statbotics
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 match_scouting_json_path = os.path.join(base_dir, 'match_scouting_data.json')
-scouting_schema_path = os.path.join(base_dir, 'scouting_schema.json')
 
 def get_entry_id(name: str, match_number: int) -> str:
 
@@ -20,117 +21,94 @@ def get_entry_id(name: str, match_number: int) -> str:
     hex_dig = hash_object.hexdigest()
     
     return hex_dig
-
-def clear_questions():
-        
-    initdict = [
-        {
-            "question": "Scout Name",
-            "name": "scout_name",
-            "type": "String"
-        },
-        {
-            "question": "Match Number",
-            "name": "match_number",
-            "type": "Integer"
-        },
-        {
-            "question": "Team Number",
-            "name": "team_number",
-            "type": "Integer"
-        },
-        {
-            "question": "Breakdown?",
-            "name": "breakdown",
-            "type": "Boolean",
-            "score_pref": "false"
-        }
-    ]
-
-    with open(match_scouting_json_path, 'w') as file:
-        json.dump(initdict, file, indent=4)
-
-
-def update_questions(list : list[dict], clear=False):
-    """Updates the schema of the database with a dictionary of items to be added.
-
-    Args:
-        list (list[dict]): List of items to be added to the schema.
-        clear (bool, optional): Whether to clear the questions before updating. Defaults to False.
-    """
-
-    if clear:
-        clear_questions()
-
-    # Load the existing JSON data
-    with open(match_scouting_json_path, 'r') as file:
-        questions = json.load(file)
-
-    # Add the new items to the existing data
-    questions[-1:-1] = list
-
-    # Save the updated data back to the JSON file
-    with open(match_scouting_json_path, 'w') as file:
-        json.dump(questions, file, indent=4)
     
-def update_schema_from_questions(clear=False):
+def get_match_scouting_schema():
     with open(match_scouting_json_path, 'r') as file:
         questions = json.load(file)
     
     filtered_questions = [question for question in questions if "score_pref" in question]
 
-    add = {}
+    schema = {}
     for question in filtered_questions:
-        add[question["name"]] = "Float"
+        schema[question["name"]] = "Float"
     
-    Database.update_schema(add, clear)
+    return schema
 
-def set_up_scouting_db(competition_key: str):
-    with open(match_scouting_json_path, 'r') as file:
-        questions = json.load(file)
-    
-    set_up_dict = {"entry_id": "String"}
-    for question in questions:
-        set_up_dict[question["name"]] = question["type"]
-    
-    with open(scouting_schema_path, 'w') as scouting_schema:
-        json.dump(set_up_dict, scouting_schema, indent=4)
-
-    Database.set_up_other_database(competition_key + "_match_scouting", scouting_schema_path, "entry_id")
-
-def add_match_scouting_data(data: dict, competition_key: str):
-
+async def add_match_scouting_data(data: dict, competition_key: str) -> bool:
     new = {
         **{"entry_id": get_entry_id(data["scout_name"], data["match_number"])},
         **data
     }
+    return await database.insert_data(competition_key + "_match_scouting", [data])
 
-    Database.add_match_scouting_data(new, competition_key)
+async def remove_match_scouting_data(entry_id: str, competition_key: str) -> bool:
+    return await database.delete_data(competition_key + "_match_scouting", {"entry_id": entry_id})
+    
+async def get_single_match_scouting_data(entry_id: str, competition_key: str):
+    return await database.query_single_row(f"{competition_key}_match_scouting", "entry_id", entry_id)
 
-def remove_match_scouting_data(entry_id: str, competition_key: str):
-    Database.remove_match_scouting_data({"entry_id": entry_id}, competition_key)
+async def get_all_match_scouting_data(competition_key: str):
+    return await database.query_data(f"{competition_key}_match_scouting")
 
-def get_single_match_scouting_data(entry_id: str, competition_key: str):
-    return database.query_single_row(f"{competition_key}_match_scouting", "entry_id", entry_id)
+async def update_main_db_from_match_scouting_db(competition_key: str) -> bool:
+    """
+    Updates the main database from the match scouting database.
 
-def get_all_match_scouting_data(competition_key: str):
-    return database.query_database(f"{competition_key}_match_scouting")
+    Args:
+        competition_key (str): The competition key to update data for. Format: "yyyyCOMP_CODE"
+    """
+    match_scouting_data = await database.query_data(competition_key + "_match_scouting")
+    team_numbers = tba_statbotics.get_list_of_team_numbers(competition_key)
+
+    scouting_schema = get_match_scouting_schema()
+    
+    scouting_schema.pop("entry_id")
+    scouting_schema.pop("scout_name")
+    scouting_schema.pop("match_number")
+    scouting_schema.pop("team_number")
+
+    for key in scouting_schema:
+        scouting_schema[key] = 0.0
+
+    to_add = []
+    
+    for team in team_numbers:
+        team_dict_sum = scouting_schema.copy()
+        team_dict_count = {key: 0 for key in scouting_schema}
+        for entry in match_scouting_data:
+            if entry["team_number"] == team:
+                for key in team_dict_sum:
+                    if isinstance(entry[key], bool):
+                        team_dict_sum[key] += int(entry[key])
+                    else:
+                        team_dict_sum[key] += entry[key]
+                    team_dict_count[key] += 1
+
+        to_add.append({
+            "team_number": team,
+            **{key: (team_dict_sum[key] / team_dict_count[key]) if team_dict_count[key] != 0 else 0 for key in team_dict_sum}
+        })
+
+    return await database.update_data(competition_key, to_add)
+
 
 
     
     
 if __name__ == '__main__':
 
-    for i in range(1, 50):
-        k = {
-            "scout_name": ''.join(random.choices(string.ascii_letters,
-                             k=5)),
-            "match_number": random.randint(1, 49),
-            "team_number": random.choice(tba_statbotics.get_list_of_team_numbers("2024code")),
-            "auto_notes": random.randint(0, 8),
-            "teleop_notes": random.randint(0, 8),
-            "notes_passed": random.randint(0, 8),
-            "climbed": bool(random.getrandbits(1)),
-            "breakdown": bool(random.getrandbits(1))
-        }
-        add_match_scouting_data(k, "2024code")
+    # for i in range(1, 50):
+    #     k = {
+    #         "scout_name": ''.join(random.choices(string.ascii_letters,
+    #                          k=5)),
+    #         "match_number": random.randint(1, 49),
+    #         "team_number": random.choice(tba_statbotics.get_list_of_team_numbers("2024code")),
+    #         "auto_notes": random.randint(0, 8),
+    #         "teleop_notes": random.randint(0, 8),
+    #         "notes_passed": random.randint(0, 8),
+    #         "climbed": bool(random.getrandbits(1)),
+    #         "breakdown": bool(random.getrandbits(1))
+    #     }
+    #     add_match_scouting_data(k, "2024code")
+
+    print(get_match_scouting_schema())
