@@ -19,3 +19,32 @@
 body {
   background: #444140;
 }
+
+.slider {
+  -webkit-appearance: none; /* Override default CSS styles */
+  appearance: none;
+  width: 100%; /* Full-width */
+  height: 8px; /* Specified height */
+  background: #ddd; /* Grey background */
+  outline: none; /* Remove outline */
+  opacity: 0.7; /* Slightly transparent */
+  transition: opacity 0.2s; /* 0.2 seconds transition on hover */
+}
+
+.slider:hover {
+  opacity: 1; /* Fully opaque on hover */
+}
+
+.slider::-webkit-slider-runnable-track {
+  -webkit-appearance: none; /* Override default look */
+  appearance: none;
+  height: auto;
+  background: #e54b4b; /* Red background */
+  cursor: pointer; /* Cursor on hover */
+}
+
+.slider::-moz-range-track {
+  background: #e54b4b; /* Red background */
+  height: 0.5rem;
+  cursor: pointer; /* Cursor on hover */
+}
