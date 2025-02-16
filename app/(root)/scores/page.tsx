@@ -7,7 +7,7 @@ import Weights from "@/app/components/Weights";
 async function fetchTeams(weights: Record<string, number>) {
   try {
     const res = await fetch(
-      `http://localhost:3000/api/py/data/weighted_all_teams/2025code/${encodeURIComponent(JSON.stringify(weights))}`,
+      `https://scouting-app-livid.vercel.app/api/py/data/weighted_all_teams/2025code/${encodeURIComponent(JSON.stringify(weights))}`,
     );
     if (!res.ok) throw new Error("Failed to fetch teams");
     return res.json();
@@ -19,7 +19,9 @@ async function fetchTeams(weights: Record<string, number>) {
 
 async function fetchSchema() {
   try {
-    const res = await fetch("http://localhost:3000/api/py/json/schema");
+    const res = await fetch(
+      "https://scouting-app-livid.vercel.app/api/py/json/schema",
+    );
     if (!res.ok) throw new Error("Failed to fetch schema");
     return res.json();
   } catch (error) {
