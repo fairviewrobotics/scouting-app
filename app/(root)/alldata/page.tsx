@@ -5,7 +5,7 @@ import TeamTable from "@/app/components/TeamTable";
 
 async function fetchTeams() {
   const res = await fetch(
-    "http://localhost:3000/api/py/data/all_teams/2025code",
+    "https://scouting-app-livid.vercel.app/api/py/data/all_teams/2025code",
   );
   return res.json();
 }
