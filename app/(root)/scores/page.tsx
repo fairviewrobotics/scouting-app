@@ -6,6 +6,10 @@ import Weights from "@/app/components/Weights";
 
 async function fetchTeams(weights: Record<string, number>) {
   try {
+    console.log("fetching teams with weights", weights);
+    console.log(
+      `https://scouting-app-livid.vercel.app/api/py/data/weighted_all_teams/2025code/${encodeURIComponent(JSON.stringify(weights))}`,
+    );
     const res = await fetch(
       `https://scouting-app-livid.vercel.app/api/py/data/weighted_all_teams/2025code/${encodeURIComponent(JSON.stringify(weights))}`,
     );
