@@ -50,6 +50,7 @@ async def get_single_team(team_number: int, competition_key: str):
 
 @app.get("/api/py/data/weighted_all_teams/{competition_key}/{weights}")
 async def get_weighted_all_teams(competition_key: str, weights: str):
+    weights = "{"+"}"
     return await score.get_sorted_teams_and_data(competition_key, json.loads(weights))
 
 @app.put("/api/py/update_data/set_up_competition/{competition_key}")
