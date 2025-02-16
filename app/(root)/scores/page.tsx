@@ -5,33 +5,45 @@ import TeamTable from "@/app/components/TeamTable";
 import Weights from "@/app/components/Weights";
 
 async function fetchTeams(weights: Record<string, number>) {
-  const res = await fetch(
-    `http://scouting-app-livid.vercel.app/api/py/data/weighted_all_teams/2025code/${encodeURIComponent(JSON.stringify(weights))}`,
-  );
-  return res.json();
+  try {
+    const res = await fetch(
+      `http://localhost:3000/api/py/data/weighted_all_teams/2025code/${encodeURIComponent(JSON.stringify(weights))}`,
+    );
+    if (!res.ok) throw new Error("Failed to fetch teams");
+    return res.json();
+  } catch (error) {
+    console.error("Error fetching teams:", error);
+    return [];
+  }
 }
 
 async function fetchSchema() {
-  const res = await fetch(
-    "http://scouting-app-livid.vercel.app/api/py/json/schema",
-  );
-  return res.json();
+  try {
+    const res = await fetch("http://localhost:3000/api/py/json/schema");
+    if (!res.ok) throw new Error("Failed to fetch schema");
+    return res.json();
+  } catch (error) {
+    console.error("Error fetching schema:", error);
+    return {};
+  }
 }
 
 export default function AllData() {
   const [teams, setTeams] = useState([]);
   const [schema, setSchema] = useState<Record<string, string>>({});
-  const [weights, setWeights] = useState<Record<string, number>>(() => ({})); // Explicitly use a function to initialize
+  const [weights, setWeights] = useState<Record<string, number>>({});
 
   useEffect(() => {
     fetchSchema().then((data) => {
       setSchema(data);
+
       const initialWeights = Object.keys(data)
         .filter((key) => key !== "team_number" && key !== "team_name")
         .reduce(
           (acc, key) => ({ ...acc, [key]: 1 }),
           {} as Record<string, number>,
-        ); // Ensure correct type
+        );
+
       setWeights(initialWeights);
     });
   }, []);
