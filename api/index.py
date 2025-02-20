@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from typing import List, Annotated
+from typing import List, Annotated, Dict
 import json
 import os
 from . import score
@@ -10,6 +10,9 @@ from . import match_scouting
 from . import utils
 
 app = FastAPI(docs_url="/api/py/docs", openapi_url="/api/py/openapi.json")
+
+class WeightsRequest(BaseModel):
+    weights: Dict[str, float]
 
 @app.get("/api/py/json/match_scouting")
 async def get_match_scouting_json():
@@ -48,10 +51,17 @@ async def get_all_teams(competition_key: str):
 async def get_single_team(team_number: int, competition_key: str):
     return await database.query_single_column(competition_key, "team_number", team_number)
 
-@app.get("/api/py/data/weighted_all_teams/{competition_key}/{weights}")
-async def get_weighted_all_teams(competition_key: str, weights: str):
-    weights = "{"+"}"
-    return await score.get_sorted_teams_and_data(competition_key, json.loads(weights))
+@app.post("/api/py/data/weighted_all_teams/{competition_key}")
+async def get_weighted_all_teams(competition_key: str, request: WeightsRequest):
+    try:
+        weights = request.weights
+        print(f"Received weights: {weights}")
+        result = await score.get_sorted_teams_and_data(competition_key, weights)
+        # print(f"Result: {result}")
+        return result
+    except Exception as e:
+        print(f"Error in get_weighted_all_teams: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.put("/api/py/update_data/set_up_competition/{competition_key}")
 async def set_up_competition(competition_key: str):

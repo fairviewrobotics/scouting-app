@@ -7,11 +7,15 @@ import Weights from "@/app/components/Weights";
 async function fetchTeams(weights: Record<string, number>) {
   try {
     console.log("fetching teams with weights", weights);
-    console.log(
-      `https://scouting-app-livid.vercel.app/api/py/data/weighted_all_teams/2025code/${encodeURIComponent(JSON.stringify(weights))}`,
-    );
     const res = await fetch(
-      `https://scouting-app-livid.vercel.app/api/py/data/weighted_all_teams/2025code/${encodeURIComponent(JSON.stringify(weights))}`,
+      `https://scouting-app-livid.vercel.app/api/py/data/weighted_all_teams/2025code`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ weights }),
+      },
     );
     if (!res.ok) throw new Error("Failed to fetch teams");
     return res.json();
@@ -56,7 +60,10 @@ export default function AllData() {
 
   useEffect(() => {
     if (Object.keys(weights).length > 0) {
-      fetchTeams(weights).then(setTeams);
+      console.log("Weights changed, fetching teams...");
+      fetchTeams(weights).then((data) => {
+        setTeams(data);
+      });
     }
   }, [weights]);
 
