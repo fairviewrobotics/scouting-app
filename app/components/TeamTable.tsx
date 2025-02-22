@@ -45,10 +45,12 @@ export default function TeamTable({ teams }: { teams: TeamData[] }) {
         <thead className="sticky top-20 z-50 bg-black">
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
+              {headerGroup.headers.map((header, index) => (
                 <th
                   key={header.id}
-                  className="cursor-pointer p-2 text-left"
+                  className={`cursor-pointer bg-black p-2 text-left ${
+                    index === 0 ? "sticky left-0" : ""
+                  } ${index === 1 ? "sticky left-32" : ""}`}
                   onClick={header.column.getToggleSortingHandler()}
                 >
                   {flexRender(
@@ -69,11 +71,16 @@ export default function TeamTable({ teams }: { teams: TeamData[] }) {
           {table.getRowModel().rows.map((row) => (
             <tr
               key={row.id}
-              className="cursor-pointer hover:bg-main-grey"
+              className="cursor-pointer bg-main-grey-dark hover:bg-main-grey"
               onClick={() => router.push(`/team/${row.original.team_number}`)}
             >
-              {row.getVisibleCells().map((cell) => (
-                <td key={cell.id} className="border-b border-black p-2">
+              {row.getVisibleCells().map((cell, index) => (
+                <td
+                  key={cell.id}
+                  className={`max-w-56 border-b border-black p-2 ${
+                    index === 0 ? "sticky left-0 bg-inherit" : ""
+                  } ${index === 1 ? "sticky left-32 bg-inherit" : ""}`}
+                >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>
               ))}

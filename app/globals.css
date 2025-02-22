@@ -16,8 +16,13 @@
   }
 }
 
+html {
+  overscroll-behavior-x: none;
+}
+
 body {
   background: #444140;
+  overscroll-behavior-x: none;
 }
 
 .slider {

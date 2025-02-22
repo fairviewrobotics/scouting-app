@@ -96,12 +96,6 @@ def score(data: list[dict], weights: dict, competition_key: str) -> list[dict]:
         z = z_score(pref_column)
         z_scores.append(z)
 
-    total_scores = [sum(values) for values in zip(*z_scores)]
-
-    print("---------------------Total scores----------------------")
-    print(total_scores)
-    print(len(total_scores))
-
     for i in range(len(z_scores)):
         key = list(schema.keys())[i]
         z_scores[i] = [value * weights.get(key, 1) for value in z_scores[i]]
@@ -112,7 +106,11 @@ def score(data: list[dict], weights: dict, competition_key: str) -> list[dict]:
 
     scores_dict = combine_lists_to_dicts(team_numbers, weighted_scores, "team_number", "score")
 
-    print("---------------------Weighted scores----------------------")
+    # print("---------------------Scores----------------------")
+    # print(weighted_scores)
+
+    # print("---------------------Weighted scores----------------------")
+    # print(scores_dict)
 
     return scores_dict
 

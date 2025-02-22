@@ -2,6 +2,7 @@
 
 import React from "react";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 
 const Navbar = () => {
   const pathname = usePathname();
@@ -15,7 +16,13 @@ const Navbar = () => {
     <div className="fixed left-0 right-0 top-0 z-50 bg-main-grey pt-1">
       <div className="flex flex-row px-5 py-2 pb-1 text-3xl">
         <a href="/alldata">
-          <img src="/blackknightslogo.png" className="h-10 w-auto px-2"></img>
+          <Image
+            src="/blackknightslogo.png"
+            width={40}
+            height={40}
+            alt=""
+            className="mx-2"
+          />
         </a>
         <h1 className="text-main-red">Team 2036 Scouting</h1>
       </div>

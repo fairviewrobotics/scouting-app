@@ -55,9 +55,7 @@ async def get_single_team(team_number: int, competition_key: str):
 async def get_weighted_all_teams(competition_key: str, request: WeightsRequest):
     try:
         weights = request.weights
-        print(f"Received weights: {weights}")
         result = await score.get_sorted_teams_and_data(competition_key, weights)
-        # print(f"Result: {result}")
         return result
     except Exception as e:
         print(f"Error in get_weighted_all_teams: {e}")
