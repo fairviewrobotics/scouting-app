@@ -25,7 +25,7 @@ match_scouting_json_path = os.path.join(base_dir, 'match_scouting_data.json')
 tmpPostgres = urlparse(os.getenv("DATABASE_URL"))
 if tmpPostgres == None: 
     tmpPostgres = urlparse(os.environ.get('DATABASE_URL'))
-engine = create_async_engine(f"postgresql+asyncpg://{tmpPostgres.username}:{tmpPostgres.password}@{tmpPostgres.hostname}{tmpPostgres.path}?ssl=require", echo=True)
+engine = create_async_engine(f"postgresql+asyncpg://{tmpPostgres.username}:{tmpPostgres.password}@{tmpPostgres.hostname}{tmpPostgres.path}?ssl=require", echo=False)
 
 metadata = MetaData()
 
@@ -66,7 +66,7 @@ async def create_main_table(competition_key) -> bool:
             )
 
         Table(competition_key, metadata, *table_columns)
-        print(f"Prepared to create table 'teams' with columns: {', '.join([col.name for col in table_columns])}")
+        # print(f"Prepared to create table 'teams' with columns: {', '.join([col.name for col in table_columns])}")
 
         # Create the table in the database
         async with engine.begin() as conn:
@@ -104,7 +104,7 @@ async def set_up_scouting_db(competition_key: str):
             )
 
         Table(competition_key + "_match_scouting", metadata, *table_columns)
-        print(f"Prepared to create table 'teams' with columns: {', '.join([col.name for col in table_columns])}")
+        # print(f"Prepared to create table 'teams' with columns: {', '.join([col.name for col in table_columns])}")
 
         # Create the table in the database
         async with engine.begin() as conn:
@@ -159,13 +159,12 @@ async def query_data(table_name: str) -> list[dict]:
     Returns:
         list[dict]: The queried data.
     """
-    print("DATABASE_URL:", os.getenv("DATABASE_URL"))
     try:
         async with engine.connect() as conn:
+            print(f"Querying data from table {table_name}")
             query = text(f'SELECT * FROM "{table_name}"')
             result = await conn.execute(query)
             rows = result.fetchall()
-            print(f"Queried data: {rows}")
             return [dict(row._mapping) for row in rows]
     except Exception as e:
         print(f"Failed to query data: {e}")
@@ -187,11 +186,11 @@ async def query_single_row(table_name: str, primary_key: str, primary_key_value)
     """
     try:
         async with engine.connect() as conn:
+            print(f"Querying data from table {table_name} where {primary_key} = {primary_key_value}")
             query = text(f'SELECT * FROM "{table_name}" WHERE "{primary_key}" = :primary_key_value')
             result = await conn.execute(query, {"primary_key_value": primary_key_value})
             row = result.fetchone()
             if row:
-                print(f"Queried row: {row}")
                 return dict(row._mapping)
             else:
                 print(f"No row found with {primary_key} = {primary_key_value}")
