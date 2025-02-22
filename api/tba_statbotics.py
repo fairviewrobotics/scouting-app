@@ -7,7 +7,7 @@ from . import database
 # import database
 
 
-dotenv_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../api', '.env'))
+dotenv_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../', '.env.local'))
 print("Loading .env file from:", dotenv_path)
 load_dotenv(dotenv_path=dotenv_path)
 apiKey = os.getenv("TBA_API_KEY")

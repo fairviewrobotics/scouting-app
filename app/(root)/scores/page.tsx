@@ -6,17 +6,15 @@ import Weights from "@/app/components/Weights";
 
 async function fetchTeams(weights: Record<string, number>) {
   try {
+    const apiURL = process.env.NEXT_PUBLIC_API_URL;
     console.log("fetching teams with weights", weights);
-    const res = await fetch(
-      `http://localhost:3000/api/py/data/weighted_all_teams/2025code`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ weights }),
+    const res = await fetch(`${apiURL}/data/weighted_all_teams/2025code`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({ weights }),
+    });
     console.log("res", res);
     if (!res.ok) throw new Error("Failed to fetch teams");
     return res.json();
@@ -28,7 +26,8 @@ async function fetchTeams(weights: Record<string, number>) {
 
 async function fetchSchema() {
   try {
-    const res = await fetch("http://localhost:3000/api/py/json/schema");
+    const apiURL = process.env.NEXT_PUBLIC_API_URL;
+    const res = await fetch(`${apiURL}/json/schema`);
     if (!res.ok) throw new Error("Failed to fetch schema");
     return res.json();
   } catch (error) {

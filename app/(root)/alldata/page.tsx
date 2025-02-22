@@ -4,9 +4,8 @@ import Link from "next/link";
 import TeamTable from "@/app/components/TeamTable";
 
 async function fetchTeams() {
-  const res = await fetch(
-    "https://scouting-app-livid.vercel.app/api/py/data/all_teams/2025code",
-  );
+  const apiURL = process.env.NEXT_PUBLIC_API_URL;
+  const res = await fetch(`${apiURL}/data/all_teams/2025code`);
   return res.json();
 }
 

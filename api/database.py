@@ -12,7 +12,7 @@ from . import utils
 # import utils
 
 
-dotenv_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../api', '.env'))
+dotenv_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../', '.env.local'))
 print("Loading .env file from:", dotenv_path)
 load_dotenv(dotenv_path=dotenv_path)
 
