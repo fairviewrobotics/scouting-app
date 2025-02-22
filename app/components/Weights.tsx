@@ -1,5 +1,8 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import { useDebounce } from "@/app/hooks/useDebounce";
+
 export default function Weights({
   data,
   weights,
@@ -7,13 +10,27 @@ export default function Weights({
 }: {
   data: Record<string, string>;
   weights: Record<string, number>;
-  setWeights: React.Dispatch<React.SetStateAction<Record<string, number>>>; // Correct type for useState setter
+  setWeights: React.Dispatch<React.SetStateAction<Record<string, number>>>;
 }) {
-  const handleChange = (key: string, value: number) => {
+  const [localWeights, setLocalWeights] = useState(weights);
+
+  useEffect(() => {
+    setLocalWeights(weights);
+  }, [weights]);
+
+  const debouncedSetWeights = useDebounce((key: string, value: number) => {
     setWeights((prev) => ({
       ...prev,
       [key]: value,
     }));
+  }, 1000); //<-- time value in milliseconds
+
+  const handleChange = (key: string, value: number) => {
+    setLocalWeights((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+    debouncedSetWeights(key, value);
   };
 
   return (
@@ -29,11 +46,13 @@ export default function Weights({
               min="0"
               max="10"
               step="0.1"
-              value={weights[key]}
+              value={localWeights[key] ?? 1}
               onChange={(e) => handleChange(key, parseFloat(e.target.value))}
               className="slider mt-[0.7rem] w-full flex-shrink-0"
             />
-            <span className="ml-3 flex-grow text-lg">{weights[key]}</span>
+            <span className="ml-3 flex-grow text-lg">
+              {localWeights[key] ?? 1}
+            </span>
           </div>
         </div>
       ))}
