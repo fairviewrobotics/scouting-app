@@ -60,6 +60,7 @@ export default function AllData() {
     if (Object.keys(weights).length > 0) {
       console.log("Weights changed, fetching teams...");
       fetchTeams(weights).then((data) => {
+        console.log("Got teams", data);
         setTeams(data);
       });
     }

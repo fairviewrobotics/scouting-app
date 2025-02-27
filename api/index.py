@@ -56,6 +56,7 @@ async def get_weighted_all_teams(competition_key: str, request: WeightsRequest):
     try:
         weights = request.weights
         result = await score.get_sorted_teams_and_data(competition_key, weights)
+        print(result)
         return result
     except Exception as e:
         print(f"Error in get_weighted_all_teams: {e}")
@@ -81,6 +82,9 @@ async def add_match_scouting(data: dict, competition_key: str):
 async def remove_match_scouting(name: str, match_number: int, competition_key: str):
     return await match_scouting.remove_match_scouting_data(match_scouting.get_entry_id(name, match_number), competition_key)
 
+@app.get("/api/py/data/single_match_scouting/{entry_id}/{competition_key}")
+async def get_single_match_scouting(name: str, match_number: int, competition_key: str):
+    return await match_scouting.get_single_match_scouting_data(match_scouting.get_entry_id(name, match_number), competition_key)
 
 
 

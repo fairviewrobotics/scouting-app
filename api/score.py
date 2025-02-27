@@ -13,6 +13,7 @@ def z_score(list: list) -> list:
     Calculate the z-score of a list of data points
     """
     if len(list) == 0:
+        print("List is empty!!!!!! aaah!!")
         return []
     mean = sum(list) / len(list)
     std_dev = (sum([(value - mean) ** 2 for value in list]) / len(list)) ** 0.5
@@ -88,6 +89,7 @@ def score(data: list[dict], weights: dict, competition_key: str) -> list[dict]:
     prefs["rank"] = -1
 
     for key in schema.keys():
+        print(f"Key: {key}")
         column = get_column_from_dict(data, key)
         for i in range(len(column)):
             if column[i] == None:
@@ -100,7 +102,21 @@ def score(data: list[dict], weights: dict, competition_key: str) -> list[dict]:
         key = list(schema.keys())[i]
         z_scores[i] = [value * weights.get(key, 1) for value in z_scores[i]]
 
-    weighted_scores = [sum(values) for values in zip(*z_scores)]
+
+    print("Lengths of arrays in z_scores:")
+    for i, z in enumerate(z_scores):
+        print(f"z_scores[{i}] length: {len(z)}")
+
+    # Debugging: Print contents of z_scores
+    print("Contents of z_scores:")
+    for i, z in enumerate(z_scores):
+        print(f"z_scores[{i}]: {z}")    
+
+    weighted_scores = [sum(values) for values in zip(*z_scores)]  
+
+
+
+
 
     team_numbers = get_column_from_dict(data, "team_number")
 
@@ -125,6 +141,7 @@ def get_sorted_teams(data: list[dict], weights: dict, competition_key: str) -> l
     Returns:
         list[dict]: The data of all teams sorted by score
     """
+
     # Calculate scores and combine with data
     scores_dict = score(data, weights, competition_key)
 
