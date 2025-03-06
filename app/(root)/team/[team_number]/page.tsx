@@ -10,7 +10,7 @@ async function fetchTeams(team_number: number) {
 export default async function Page({
   params,
 }: {
-  params: { team_number: string };
+  params: Promise<{ team_number: number }>;
 }) {
   const parameters = await params;
   const team_number = await Number(parameters.team_number);
