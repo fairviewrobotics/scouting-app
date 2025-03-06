@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, create_model
 from typing import List, Annotated, Dict
 import json
 import os
@@ -74,8 +74,8 @@ async def set_up_competition(competition_key: str):
         "setting_up_competition": result3
     }
 
-@app.put("/api/py/update_data/add_match_scouting/{competition_key}")
-async def add_match_scouting(data: dict, competition_key: str):
+@app.post("/api/py/update_data/add_match_scouting/{competition_key}")
+async def add_match_scouting(competition_key: str, data: dict):
     return await match_scouting.add_match_scouting_data(data, competition_key)
 
 @app.put("/api/py/update_data/remove_match_scouting/{entry_id}/{competition_key}")
@@ -86,6 +86,9 @@ async def remove_match_scouting(name: str, match_number: int, competition_key: s
 async def get_single_match_scouting(name: str, match_number: int, competition_key: str):
     return await match_scouting.get_single_match_scouting_data(match_scouting.get_entry_id(name, match_number), competition_key)
 
+@app.put("/api/py/update_data/main_db_from_match_scouting/{competition_key}")
+async def update_main_db_from_match_scouting(competition_key: str):
+    return await match_scouting.update_main_db_from_match_scouting_db(competition_key)
 
 
 

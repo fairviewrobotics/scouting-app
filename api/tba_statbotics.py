@@ -79,7 +79,7 @@ def get_list_of_team_ranks(event_key: str) -> list[int]:
         if response.status_code == 200:
             posts = response.json()
             for team in posts.items():
-                if team[1] == None:
+                if team[1] == None or team[1]["qual"] == None:
                     list_of_teams.append(1)
                 else:
                     list_of_teams.append(team[1]["qual"]["ranking"]["rank"])
@@ -107,7 +107,7 @@ def get_list_of_team_winrates(event_key: str) -> list[int]:
         if response.status_code == 200:
             posts = response.json()
             for team in posts.items():
-                if team[1] == None:
+                if team[1] == None or team[1]["qual"] == None:
                     list_of_teams.append(0)
                 else:
                     winrate = team[1]["qual"]["ranking"]["record"]["wins"] / (team[1]["qual"]["ranking"]["record"]["wins"] + team[1]["qual"]["ranking"]["record"]["losses"])

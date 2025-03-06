@@ -5,7 +5,8 @@ import TeamTable from "@/app/components/TeamTable";
 
 async function fetchTeams() {
   const apiURL = process.env.NEXT_PUBLIC_API_URL;
-  const res = await fetch(`${apiURL}/data/all_teams/2025code`);
+  const compKey = process.env.NEXT_PUBLIC_COMP_KEY;
+  const res = await fetch(`${apiURL}/data/all_teams/${compKey}`);
   return res.json();
 }
 

@@ -39,7 +39,7 @@ async def add_match_scouting_data(data: dict, competition_key: str) -> bool:
         **{"entry_id": get_entry_id(data["scout_name"], data["match_number"])},
         **data
     }
-    return await database.insert_data(competition_key + "_match_scouting", [data])
+    return await database.insert_data(competition_key + "_match_scouting", [new])
 
 async def remove_match_scouting_data(entry_id: str, competition_key: str) -> bool:
     return await database.delete_data(competition_key + "_match_scouting", {"entry_id": entry_id})
@@ -61,11 +61,8 @@ async def update_main_db_from_match_scouting_db(competition_key: str) -> bool:
     team_numbers = tba_statbotics.get_list_of_team_numbers(competition_key)
 
     scouting_schema = get_match_scouting_schema()
-    
-    scouting_schema.pop("entry_id")
-    scouting_schema.pop("scout_name")
-    scouting_schema.pop("match_number")
-    scouting_schema.pop("team_number")
+
+    print(scouting_schema)
 
     for key in scouting_schema:
         scouting_schema[key] = 0.0

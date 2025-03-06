@@ -7,8 +7,9 @@ import Weights from "@/app/components/Weights";
 async function fetchTeams(weights: Record<string, number>) {
   try {
     const apiURL = process.env.NEXT_PUBLIC_API_URL;
+    const compKey = process.env.NEXT_PUBLIC_COMP_KEY;
     console.log("fetching teams with weights", weights);
-    const res = await fetch(`${apiURL}/data/weighted_all_teams/2025code`, {
+    const res = await fetch(`${apiURL}/data/weighted_all_teams/${compKey}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

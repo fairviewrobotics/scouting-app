@@ -15,28 +15,46 @@
     "type": "Integer"
   },
   {
-    "question": "Auto Notes Scored",
-    "name": "auto_notes",
-    "type": "Integer",
-    "score_pref": "high"
-  },
-  {
-    "question": "Teleop Notes Scored",
-    "name": "teleop_notes",
-    "type": "Integer",
-    "score_pref": "high"
-  },
-  {
-    "question": "Notes Passed",
-    "name": "notes_passed",
-    "type": "Integer",
-    "score_pref": "high"
-  },
-  {
-    "question": "Climbed?",
-    "name": "climbed",
+    "question": "Left in Auto?",
+    "name": "auto_leave_count",
     "type": "Boolean",
     "score_pref": "true"
+  },
+  {
+    "question": "Auto Coral Scored",
+    "name": "auto_coral_count",
+    "type": "Integer",
+    "score_pref": "high"
+  },
+  {
+    "question": "Teleop Coral Scored",
+    "name": "teleop_coral_count",
+    "type": "Integer",
+    "score_pref": "high"
+  },
+  {
+    "question": "Algae Scored",
+    "name": "algae_scored",
+    "type": "Integer",
+    "score_pref": "high"
+  },
+  {
+    "question": "Shallow Climbed?",
+    "name": "shallow_climbed",
+    "type": "Boolean",
+    "score_pref": "true"
+  },
+  {
+    "question": "Deep Climbed?",
+    "name": "deep_climbed",
+    "type": "Boolean",
+    "score_pref": "true"
+  },
+  {
+    "question": "Defense Rating (0-10)",
+    "name": "defense_rating",
+    "type": "Integer",
+    "score_pref": "high"
   },
   {
     "question": "Breakdown?",
