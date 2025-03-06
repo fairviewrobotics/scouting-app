@@ -31,7 +31,13 @@ export default function MatchScoutingForm() {
         // Initialize form state with default values
         const initialData: { [key: string]: string | number | boolean } = {};
         data.forEach((q) => {
-          initialData[q.name] = q.type === "Boolean" ? false : ""; // Default false for booleans, empty for others
+          if (q.type === "Boolean") {
+            initialData[q.name] = false; // Default false for booleans
+          } else if (q.type === "Integer") {
+            initialData[q.name] = 0; // Default 0 for integers
+          } else {
+            initialData[q.name] = ""; // Default empty string for strings
+          }
         });
         setFormData(initialData);
       } catch (error) {
@@ -76,7 +82,7 @@ export default function MatchScoutingForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="mx-auto mt-20 max-w-2xl space-y-4 rounded-lg bg-main-grey-dark p-4 text-main-red shadow-2xl shadow-black"
+      className="mx-auto mt-16 max-w-2xl space-y-4 rounded-lg bg-main-grey-dark p-4 text-main-red shadow-2xl shadow-black md:mt-20"
     >
       {questions.map((q) => (
         <div key={q.name} className="flex flex-col">

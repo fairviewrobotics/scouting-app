@@ -5,7 +5,7 @@ import MatchScoutingForm from "../../components/MatchScoutingForm";
 
 export default function MatchScouting() {
   return (
-    <main className="h-screen bg-main-grey-dark">
+    <main className="h-max bg-main-grey-dark">
       <MatchScoutingForm />
     </main>
   );

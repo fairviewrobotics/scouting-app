@@ -152,7 +152,13 @@ def get_sorted_teams(data: list[dict], weights: dict, competition_key: str) -> l
     combined_data = []
     for team in sorted_teams:
         team_data = next(item for item in data if item["team_number"] == team["team_number"])
-        combined_data.append({**team_data, "score": team["score"]})
+        
+        combined_data.append({
+            "team_number": team_data["team_number"],
+            "team_name": team_data["team_name"],
+            "score": team["score"],
+            **{k: v for k, v in team_data.items() if k not in ["team_number", "team_name"]}
+        })
 
     return combined_data
 
