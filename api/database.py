@@ -5,7 +5,7 @@ from sqlalchemy import text
 from dotenv import load_dotenv
 from urllib.parse import urlparse
 from sqlalchemy.ext.asyncio import create_async_engine
-from sqlalchemy import MetaData, Table, Column, Integer, String, DateTime, Float, Boolean, text
+from sqlalchemy import MetaData, Table, Column, Integer, String, DateTime, Float, Boolean, LargeBinary, text
 from sqlalchemy.types import TypeEngine
 
 from . import utils
@@ -18,6 +18,7 @@ load_dotenv(dotenv_path=dotenv_path)
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 match_scouting_json_path = os.path.join(base_dir, 'match_scouting_data.json')
+pit_scouting_json_path = os.path.join(base_dir, 'pit_scouting_data.json')
 
 
 # DATABASE SETUP
@@ -35,7 +36,8 @@ SQLALCHEMY_TYPE_MAP = {
     "String": String,
     "DateTime": DateTime,
     "Float": Float,
-    "Boolean": Boolean
+    "Boolean": Boolean,
+    "ByteArray": LargeBinary 
 }
 
 
@@ -104,6 +106,43 @@ async def set_up_scouting_db(competition_key: str):
             )
 
         Table(competition_key + "_match_scouting", metadata, *table_columns)
+        # print(f"Prepared to create table 'teams' with columns: {', '.join([col.name for col in table_columns])}")
+
+        # Create the table in the database
+        async with engine.begin() as conn:
+            await conn.run_sync(metadata.create_all)
+        print(f"Table {competition_key} created.")
+        return True
+    except Exception as e:
+        print(f"Failed to create table: {e}")
+        return False
+    finally:
+        await engine.dispose()
+
+async def set_up_pit_scouting_db(competition_key: str):
+    with open(pit_scouting_json_path, 'r') as file:
+        questions = json.load(file)
+    
+    set_up_dict = {}
+    for question in questions:
+        set_up_dict[question["name"]] = question["type"]
+
+    try:
+        # Load schema from JSON
+        schema = set_up_dict
+        
+        # Create the 'teams' table
+        table_columns = []
+        for column_name, column_type in schema.items():
+            sql_type: TypeEngine = SQLALCHEMY_TYPE_MAP.get(column_type)
+            if not sql_type:
+                raise ValueError(f"Unsupported column type: {column_type}")
+            # Add columns, make "Team Number" a primary key if it fits
+            table_columns.append(
+                Column(column_name.replace(" ", "_").lower(), sql_type, primary_key=(column_name == "team_number"))
+            )
+
+        Table(competition_key + "_pit_scouting", metadata, *table_columns)
         # print(f"Prepared to create table 'teams' with columns: {', '.join([col.name for col in table_columns])}")
 
         # Create the table in the database

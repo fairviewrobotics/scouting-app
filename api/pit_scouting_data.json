@@ -1,0 +1,52 @@
+[
+  {
+    "question": "Team Number",
+    "name": "team_number",
+    "type": "Integer"
+  },
+  {
+    "question": "Drivetrain Type",
+    "name": "drivetrain_type",
+    "type": "String"
+  },
+  {
+    "question": "Intake Type",
+    "name": "intake_type",
+    "type": "String"
+  },
+  {
+    "question": "What heights can the robot score (L1, L2, L3, L4)?",
+    "name": "heights",
+    "type": "String"
+  },
+  {
+    "question": "Can the robot remove algae?",
+    "name": "algae_remove",
+    "type": "String"
+  },
+  {
+    "question": "Can the robot score algae? If so, processer and/or net?",
+    "name": "algae_score",
+    "type": "String"
+  },
+  {
+    "question": "Climber Type",
+    "name": "climber_type",
+    "type": "String"
+  },
+  {
+    "question": "Does the robot have vision align? If so, how accurate?",
+    "name": "vision_align",
+    "type": "String"
+  },
+  {
+    "question": "Auto Capabilities",
+    "name": "auto_capabilities",
+    "type": "String"
+  },
+  {
+    "question": "Robot Image",
+    "name": "robot_image",
+    "type": "String"
+  }
+]
