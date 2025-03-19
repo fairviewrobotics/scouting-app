@@ -10,7 +10,7 @@
     "type": "String"
   },
   {
-    "question": "Intake Type",
+    "question": "Intake Type (Ground or Source)",
     "name": "intake_type",
     "type": "String"
   },
@@ -30,8 +30,13 @@
     "type": "String"
   },
   {
-    "question": "Climber Type",
-    "name": "climber_type",
+    "question": "Climber Level (Shallow or Deep)",
+    "name": "climber_level",
+    "type": "String"
+  },
+  {
+    "question": "Climb Time",
+    "name": "climber_time",
     "type": "String"
   },
   {
@@ -40,7 +45,12 @@
     "type": "String"
   },
   {
-    "question": "Auto Capabilities",
+    "question": "Cycle Time",
+    "name": "cycle_time",
+    "type": "String"
+  },
+  {
+    "question": "Auto Capabilities (Piece Count, Starting Position, Accuracy)",
     "name": "auto_capabilities",
     "type": "String"
   },
